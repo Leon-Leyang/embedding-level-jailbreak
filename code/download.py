@@ -1,11 +1,4 @@
-import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
-
-# Set the cache directory
-os.environ["TRANSFORMERS_CACHE"] = "/home/Newdisk2/jinhaibo/cache"
-
-# Define where the models should be finally saved
-final_model_directory = "/home/Newdisk2/jinhaibo/LLM-Safeguard/model"
 
 # List of models to initialize and save
 model_names = [
@@ -21,26 +14,17 @@ model_names = [
 ]
 
 
-def save_model_and_tokenizer(model_name, base_directory):
-    save_directory = os.path.join(base_directory, model_name.split('/')[0], model_name.split('/')[1])
-    # Ensure save directory exists
-    if not os.path.exists(save_directory):
-        os.makedirs(save_directory)
-
+def save_model_and_tokenizer(model_name, cache_dir):
     # Initialize model and tokenizer from the cache
-    model = AutoModelForCausalLM.from_pretrained(model_name)
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-
-    # Save model and tokenizer to the final directory
-    model.save_pretrained(save_directory)
-    tokenizer.save_pretrained(save_directory)
-    print(f"Saved {model_name} to {save_directory}")
+    model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir=cache_dir)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
 
 
 # Iterate over each model and save them to the final directory
+cache_dir = "D:/models"
 for model_name in model_names:
     print(f"Initializing and saving {model_name}...")
-    save_model_and_tokenizer(model_name, final_model_directory)
+    save_model_and_tokenizer(model_name, cache_dir)
 
 print("All models have been initialized and saved locally.")
 
