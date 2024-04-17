@@ -1,5 +1,4 @@
-export CUDA_VISIBLE_DEVICES=0,1
-HF_MODELS="/home/Newdisk2/jinhaibo/LLM-Safeguard/model" 
+HF_MODELS="/home/Newdisk2/jinhaibo/LLM-Safeguard/model"
 full_model_names=(
     "meta-llama/Llama-2-7b-chat-hf"
     "codellama/CodeLlama-7b-Instruct-hf"
@@ -7,7 +6,7 @@ full_model_names=(
     "microsoft/Orca-2-7b"
     "mistralai/Mistral-7B-Instruct-v0.1"
     "mistralai/Mistral-7B-Instruct-v0.2"
-    "openchat/openchat_3.5"
+    "openchat/openchat-3.5"
     "openchat/openchat-3.5-1210"
 )
 

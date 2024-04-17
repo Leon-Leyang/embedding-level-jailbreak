@@ -218,7 +218,7 @@ def main():
         values = smooth_fn(values)
 
         num = lower_dim.shape[0]
-        if model_name not in ['openchat_3.5', 'openchat-3.5-1210']:
+        if model_name not in ['openchat-3.5', 'openchat-3.5-1210']:
             ax.scatter(lower_dim[:num//3, 0].cpu().numpy(), lower_dim[:num//3, 1].cpu().numpy(),
                     marker='o', alpha=0.3, c=values[:num//3], cmap='jet_r')
             ax.scatter(lower_dim[num//3:2*num//3, 0].cpu().numpy(), lower_dim[num//3:2*num//3, 1].cpu().numpy(),
