@@ -278,9 +278,7 @@ def main():
                 else torch.float32,
         use_safetensors=True,
         device_map="auto",
-        attn_implementation="flash_attention_2" if torch.cuda.is_bf16_supported()
-                and not (('Orca-2-' in model_name or 'vicuna-' in model_name) and args.use_testset)
-                else None,
+        attn_implementation=None,
     )
 
     logging.info(f"Model name: {model_name}")
