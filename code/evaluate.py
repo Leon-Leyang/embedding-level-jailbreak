@@ -144,7 +144,7 @@ def main():
             torch_dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
             use_safetensors=True,
             device_map="auto",
-            attn_implementation="flash_attention_2" if torch.cuda.is_bf16_supported() else None,
+            attn_implementation=None,
         )
         toker = AutoTokenizer.from_pretrained(args.evaluator_path)
 
