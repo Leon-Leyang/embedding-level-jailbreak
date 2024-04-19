@@ -265,8 +265,9 @@ def main():
         logging.info(f"{k}: {v}")
 
     if os.path.exists(f"{args.output_path}/{fname}/output_sampling.csv" if args.use_sampling else f"{args.output_path}/{fname}/output_greedy.csv"):
-        logging.info(f"File {args.output_path}/{fname}/output_sampling.csv exists, skipping")
-        return
+        logging.info(f"File {args.output_path}/{fname}/output_sampling.csv exists, deleting")
+        os.remove(f"{args.output_path}/{fname}/output_sampling.csv" if args.use_sampling else f"{args.output_path}/{fname}/output_greedy.csv")
+        logging.info(f"Deleted")
 
     # prepare model
     model = AutoModelForCausalLM.from_pretrained(
