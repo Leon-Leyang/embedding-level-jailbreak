@@ -60,6 +60,7 @@ def main():
     parser.add_argument("--output_path", type=str, default='./estimations')
     parser.add_argument("--system_prompt_type", type=str, choices=['all'], required=True)
     parser.add_argument("--n_splits", type=int, default=10)
+    parser.add_argument("--pca_dim", type=int)
     args = parser.parse_args()
 
     # logging args
@@ -190,7 +191,7 @@ def main():
         all_hidden_states_with_short,
         all_hidden_states_with_mistral,
     ], dim=0).float()
-    pca = PCA(PCA_DIM, random_state=42)
+    pca = PCA(args.pca_dim if args.pca_dim is not None else PCA_DIM, random_state=42)
     pca.fit(hidden_states.cpu().numpy())
     logging.info(f"PCA explained variance ratio: {pca.explained_variance_ratio_}, sum: {np.sum(pca.explained_variance_ratio_)}")
 

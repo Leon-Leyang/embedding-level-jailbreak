@@ -148,6 +148,7 @@ def main():
     parser.add_argument("--ablate_norm", action="store_true")
     parser.add_argument("--ablate_refu", action="store_true")
     parser.add_argument("--ablate_harm", action="store_true")
+    parser.add_argument("--soft_prompt_path", type=str, default="./trained_prompts")
 
     parser.add_argument("--use_default_prompt", action='store_true')
     parser.add_argument("--use_short_prompt", action='store_true')
@@ -288,17 +289,17 @@ def main():
 
     if args.use_soft_prompt:
         if args.do_data_ablation:
-            soft_prompt_file = f'./trained_prompts_ablation/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}.safetensors'
+            soft_prompt_file = f'{args.soft_prompt_path}_ablation/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}.safetensors'
         elif args.do_unlikelihood:
-            soft_prompt_file = f'./trained_prompts_unlikelihood/{model_name}/length.{args.prompt_length}.safetensors'
+            soft_prompt_file = f'{args.soft_prompt_path}_unlikelihood/{model_name}/length.{args.prompt_length}.safetensors'
         elif args.ablate_norm:
-            soft_prompt_file = f'./trained_prompts/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_nonorm.safetensors'
+            soft_prompt_file = f'{args.soft_prompt_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_nonorm.safetensors'
         elif args.ablate_refu:
-            soft_prompt_file = f'./trained_prompts/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_norefu.safetensors'
+            soft_prompt_file = f'{args.soft_prompt_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_norefu.safetensors'
         elif args.ablate_harm:
-            soft_prompt_file = f'./trained_prompts/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_noharm.safetensors'
+            soft_prompt_file = f'{args.soft_prompt_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_noharm.safetensors'
         else:
-            soft_prompt_file = f'./trained_prompts/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}.safetensors'
+            soft_prompt_file = f'{args.soft_prompt_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}.safetensors'
         with safe_open(soft_prompt_file, framework='pt') as f:
             soft_prompt = f.get_tensor('soft_prompt')
         args.soft_prompt = soft_prompt
