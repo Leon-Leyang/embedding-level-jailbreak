@@ -199,6 +199,7 @@ def main():
     V = torch.tensor(pca.components_.T, dtype=torch.float, device='cuda')
     n = V.size(0)
     basis = [V[:, i] for i in range(V.size(1))]
+    V = V[:, :PCA_DIM]
     set_seed(42)
     all_vectors = torch.randn((n*2, n), device='cuda', dtype=torch.double)
     orthogonal_basis = gram_schmidt(all_vectors, basis, n)
