@@ -123,7 +123,7 @@ def main():
 
     # prepare LinearTransform
     refusal_model = nn.Linear(PCA_DIM, 1)
-    with safe_open(f'./{args.estimation_path}/{model_name}_{args.system_prompt_type}/refusal.safetensors', framework='pt') as f:
+    with safe_open(f'{args.estimation_path}/{model_name}_{args.system_prompt_type}/refusal.safetensors', framework='pt') as f:
         weight = f.get_tensor('weight').mean(dim=0)
         bias = f.get_tensor('bias').mean(dim=0)
     refusal_model.load_state_dict({'weight': weight, 'bias': bias})
@@ -132,7 +132,7 @@ def main():
         param.requires_grad = False
 
     harmfulness_model = nn.Linear(PCA_DIM, 1)
-    with safe_open(f'./{args.estimation_path}/{model_name}_{args.system_prompt_type}/harmfulness.safetensors', framework='pt') as f:
+    with safe_open(f'{args.estimation_path}/{model_name}_{args.system_prompt_type}/harmfulness.safetensors', framework='pt') as f:
         weight = f.get_tensor('weight').mean(dim=0)
         bias = f.get_tensor('bias').mean(dim=0)
     harmfulness_model.load_state_dict({'weight': weight, 'bias': bias})
@@ -140,7 +140,7 @@ def main():
     for param in refusal_model.parameters():
         param.requires_grad = False
 
-    with safe_open(f'./{args.estimation_path}/{model_name}_{args.system_prompt_type}/transform.safetensors', framework='pt') as f:
+    with safe_open(f'{args.estimation_path}/{model_name}_{args.system_prompt_type}/transform.safetensors', framework='pt') as f:
         mean = f.get_tensor('mean').float().to(device)
         V = f.get_tensor('V').float().to(device)
 
