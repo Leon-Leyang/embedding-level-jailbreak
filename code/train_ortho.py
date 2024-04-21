@@ -123,18 +123,18 @@ def main():
     # prepare LinearTransform
     refusal_model = nn.Linear(PCA_DIM, 1)
     with safe_open(f'./estimations/{model_name}_{args.system_prompt_type}/refusal.safetensors', framework='pt') as f:
-        r_weight = f.get_tensor('weight').mean(dim=0)
-        r_bias = f.get_tensor('bias').mean(dim=0)
-    refusal_model.load_state_dict({'weight': r_weight, 'bias': r_bias})
+        weight = f.get_tensor('weight').mean(dim=0)
+        bias = f.get_tensor('bias').mean(dim=0)
+    refusal_model.load_state_dict({'weight': weight, 'bias': bias})
     refusal_model.float().to(device)
     for param in refusal_model.parameters():
         param.requires_grad = False
 
     harmfulness_model = nn.Linear(PCA_DIM, 1)
     with safe_open(f'./estimations/{model_name}_{args.system_prompt_type}/harmfulness.safetensors', framework='pt') as f:
-        h_weight = f.get_tensor('weight').mean(dim=0)
-        h_bias = f.get_tensor('bias').mean(dim=0)
-    harmfulness_model.load_state_dict({'weight': h_weight, 'bias': h_bias})
+        weight = f.get_tensor('weight').mean(dim=0)
+        bias = f.get_tensor('bias').mean(dim=0)
+    harmfulness_model.load_state_dict({'weight': weight, 'bias': bias})
     harmfulness_model.float().to(device)
     for param in refusal_model.parameters():
         param.requires_grad = False
@@ -238,6 +238,8 @@ def main():
         base_transformed = torch.concat([base_transformeds[e] for e in batch_queries], dim=0)
         new_transformed = torch.matmul(new_last_hidden_states.float() - mean, V)
 
+        r_weight = refusal_model.weight
+        h_weight = harmfulness_model.weight
         diff = new_transformed[:, :PCA_DIM] - base_transformed[:, :PCA_DIM]
         ortho_loss = torch.mean(torch.norm(
                 diff -
