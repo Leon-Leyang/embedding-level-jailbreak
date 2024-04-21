@@ -266,7 +266,7 @@ def main():
         elif args.ablate_norm:
             total_loss = refusal_loss + harmfulness_loss * 1e-2
         else:
-            total_loss = refusal_loss + harmfulness_loss * 1e-2 + norm_loss * 1e-3 + ortho_loss * 1e-3
+            total_loss = refusal_loss + harmfulness_loss * 1e-2 + norm_loss * 1e-3 + ortho_loss * 1e-5
 
         total_loss.backward()
         torch.nn.utils.clip_grad_norm_(soft_prompt, 1.0)
