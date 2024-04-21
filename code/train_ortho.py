@@ -260,11 +260,11 @@ def main():
         harmfulness_loss = F.binary_cross_entropy_with_logits(harmfulness_logits, batch_labels)
 
         if args.ablate_refu:
-            total_loss = harmfulness_loss + norm_loss * 1e-3
+            total_loss = harmfulness_loss + norm_loss * 1e-3 + ortho_loss * 1e-5
         elif args.ablate_harm:
-            total_loss = refusal_loss + norm_loss * 1e-3
+            total_loss = refusal_loss + norm_loss * 1e-3 + ortho_loss * 1e-5
         elif args.ablate_norm:
-            total_loss = refusal_loss + harmfulness_loss * 1e-2
+            total_loss = refusal_loss + harmfulness_loss * 1e-2 + ortho_loss * 1e-5
         else:
             total_loss = refusal_loss + harmfulness_loss * 1e-2 + norm_loss * 1e-3 + ortho_loss * 1e-5
 
