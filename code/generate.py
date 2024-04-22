@@ -261,7 +261,7 @@ def main():
             lines = [e['instruction'] for e in json.load(f)[:100]]
     elif args.use_jailbreak:
         fname += "_jailbreak"
-        with open(f"{data_path}/custom_sure.txt") as f:
+        with open(f"{data_path}/custom.txt") as f:
             lines = f.readlines()
     else:
         fname += "_custom"
