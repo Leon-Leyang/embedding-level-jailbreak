@@ -116,6 +116,7 @@ def main():
     parser.add_argument("--use_advbench", action="store_true")
     parser.add_argument("--evaluator_path", type=str)
     parser.add_argument("--use_harmless", action="store_true")
+    parser.add_argument("--use_jailbreak", action="store_true")
     parser.add_argument("--use_testset", action="store_true")
     parser.add_argument("--generation_output_path", type=str, default='./outputs')
     parser.add_argument("--output_path", type=str, default='./eval_results')
@@ -159,6 +160,10 @@ def main():
             data_path = './data_harmless'
             generation_output_path = args.generation_output_path + "_harmless"
             output_path = args.output_path + "_harmless"
+        elif args.use_jailbreak:
+            data_path = './data_jailbreak'
+            generation_output_path = args.generation_output_path + "_jailbreak"
+            output_path = args.output_path + "_jailbreak"
         else:
             data_path = './data'
             generation_output_path = args.generation_output_path

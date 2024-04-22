@@ -8,5 +8,5 @@ def add_sure(original_file_path, new_file_path):
 
 if __name__ == '__main__':
     original_file_path = './data/custom.txt'
-    new_file_path = './data_jailbreak/custom_sure.txt'
+    new_file_path = 'data_jailbreak/custom.txt'
     add_sure(original_file_path, new_file_path)
