@@ -159,6 +159,7 @@ def main():
     parser.add_argument("--use_alpaca", action="store_true")
     parser.add_argument("--use_harmless", action="store_true")
     parser.add_argument("--use_testset", action="store_true")
+    parser.add_argument("--use_jailbreak", action="store_true")
 
     parser.add_argument("--output_path", type=str, default='./outputs')
     args = parser.parse_args()
@@ -236,6 +237,9 @@ def main():
     elif args.use_alpaca:
         data_path = './data_alpaca'
         args.output_path += "_alpaca"
+    elif args.use_jailbreak:
+        data_path = './data_jailbreak'
+        args.output_path += "_jailbreak"
     else:
         data_path = './data'
 
@@ -255,6 +259,10 @@ def main():
         fname += "_alpaca"
         with open(f"{data_path}/alpaca_eval.json") as f:
             lines = [e['instruction'] for e in json.load(f)[:100]]
+    elif args.use_jailbreak:
+        fname += "_jailbreak"
+        with open(f"{data_path}/custom_sure.txt") as f:
+            lines = f.readlines()
     else:
         fname += "_custom"
         with open(f"{data_path}/custom.txt") as f:
