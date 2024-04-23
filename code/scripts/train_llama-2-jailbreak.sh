@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=0
 HF_MODELS="/home/Newdisk2/jinhaibo/LLM-Safeguard/model"
 full_model_names=(
     "meta-llama/Llama-2-7b-chat-hf"

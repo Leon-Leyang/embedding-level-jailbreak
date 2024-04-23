@@ -20,7 +20,7 @@ python train_attack.py \
 # harmful eval for malicious
 python generate.py \
     --use_sampling --n_samples 25 --use_malicious --pretrained_model_path ${model} \
-    --use_soft_prompt --system_prompt_type ${system_prompt_type} --prompt_length ${prompt_length} \
+    --system_prompt_type ${system_prompt_type}\
     --use_jailbreak_prompt \
     --soft_prompt_path ./trained_prompts_attack
 
@@ -34,7 +34,7 @@ python evaluate.py \
 # harmful eval for advbench
 python generate.py \
     --use_sampling --n_samples 25 --use_advbench --pretrained_model_path ${model} \
-    --use_soft_prompt --system_prompt_type ${system_prompt_type} --prompt_length ${prompt_length} \
+    --system_prompt_type ${system_prompt_type}\
     --use_jailbreak_prompt \
     --soft_prompt_path ./trained_prompts_attack
 

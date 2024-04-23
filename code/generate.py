@@ -36,6 +36,8 @@ def prepend_sys_prompt(sentence, args):
     messages = [{'role': 'user', 'content': sentence.strip()}]
     if args.use_soft_prompt:
         messages = [{'role': 'system', 'content': ''.join([f'<soft_prompt_{i}>' for i in range(args.soft_prompt.size(0))])}] + messages
+    elif args.use_jailbreak_prompt:
+        messages = [{'role': 'system', 'content': ''.join([f'<jailbreak_prompt_{i}>' for i in range(20)])}] + messages
     elif args.use_default_prompt:
         messages = [{'role': 'system', 'content': DEFAULT_SYSTEM_PROMPT}] + messages
     elif args.use_short_prompt:
