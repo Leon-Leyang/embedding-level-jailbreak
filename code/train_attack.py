@@ -111,7 +111,7 @@ def main():
     parser.add_argument("--config", type=str, choices=["greedy", "sampling"])
     parser.add_argument("--system_prompt_type", type=str, choices=['all', 'default', 'mistral', 'short'], required=True)
     parser.add_argument("--prompt_length", type=int, default=20)
-    parser.add_argument("--output_path", type=str, default='./trained_prompts_attack')
+    parser.add_argument("--output_path", type=str, default='./trained_prompts_attack-v2')
     parser.add_argument("--estimation_path", type=str, default='./estimations')
     parser.add_argument("--ablate_norm", action='store_true')
     parser.add_argument("--ablate_refu", action='store_true')
@@ -270,7 +270,9 @@ def main():
         #     total_loss = refusal_loss + harmfulness_loss * 1e-2
         # else:
         #     total_loss = refusal_loss + harmfulness_loss * 1e-2 + norm_loss * 1e-3
-        total_loss = -refusal_loss
+
+        # total_loss = -refusal_loss
+        total_loss = -refusal_loss + norm_loss * 1e-3
 
         total_loss.backward()
         torch.nn.utils.clip_grad_norm_(jailbreak_prompt, 1.0)
@@ -279,7 +281,9 @@ def main():
 
         if step % 10 == 0:
             # logging.info(f'Step {step}, refusal_loss {refusal_loss.cpu().item()}, harmfulness_loss {harmfulness_loss.cpu().item()}, norm_loss {norm_loss.cpu().item()}')
-            logging.info(f'Step {step}, refusal_loss {refusal_loss.cpu().item()}')
+
+            # logging.info(f'Step {step}, refusal_loss {refusal_loss.cpu().item()}')
+            logging.info(f'Step {step}, refusal_loss {-total_loss.cpu().item()}, norm_loss {norm_loss.cpu().item()}')
 
     jailbreak_prompt = jailbreak_prompt.detach()
     if args.ablate_norm:

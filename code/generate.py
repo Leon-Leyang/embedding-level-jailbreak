@@ -260,7 +260,7 @@ def main():
     elif args.use_mistral_prompt:
         fname += "_with_mistral"
     elif args.use_jailbreak_prompt:
-        fname += f"_with_jailbreak_{args.system_prompt_type}_20"
+        fname += f"_with_jailbreak-v2_{args.system_prompt_type}_20"
 
     if args.use_harmless:
         data_path = './data_harmless'
