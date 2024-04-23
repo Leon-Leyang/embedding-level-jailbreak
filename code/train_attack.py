@@ -36,6 +36,30 @@ BATCH_SIZE = 50
 NUM_EPOCHES = 40
 
 
+def process_jailbreak_prompt_as_word_embedding(
+    model: PreTrainedModel,
+    toker: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
+    jailbreak_prompt_length: int,
+) -> nn.Module:
+    # We embed soft prompt into input word embedding and safe it
+    # When loaded later, simply call model.set_input_embeddings()
+    config = model.config
+    padding_idx = config.pad_token_id
+
+    old_toker_size = len(toker)
+    toker.add_tokens([f'<jailbreak_prompt_{i}>' for i in range(jailbreak_prompt_length)], special_tokens=True)
+    new_toker_size = len(toker)
+
+    old_input_embeddings = model.get_input_embeddings()
+    embedding_dim = old_input_embeddings.embedding_dim
+    old_num_embeddings = old_input_embeddings.num_embeddings
+    new_num_embeddings = max(new_toker_size, old_num_embeddings)
+
+    new_input_embeddings = nn.Embedding(new_num_embeddings, embedding_dim, padding_idx)
+    new_input_embeddings.weight.data[:old_toker_size] = old_input_embeddings.weight.data[:old_toker_size]
+    return toker, new_input_embeddings
+
+
 def embed_soft_prompt(
     model: PreTrainedModel,
     toker: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
@@ -86,7 +110,7 @@ def main():
     parser.add_argument("--pretrained_model_path", type=str, required=True)
     parser.add_argument("--config", type=str, choices=["greedy", "sampling"])
     parser.add_argument("--system_prompt_type", type=str, choices=['all', 'default', 'mistral', 'short'], required=True)
-    parser.add_argument("--prompt_length", type=str, choices=['default', 'mistral', 'short'], required=True)
+    parser.add_argument("--prompt_length", type=int, default=20)
     parser.add_argument("--output_path", type=str, default='./trained_prompts_attack')
     parser.add_argument("--estimation_path", type=str, default='./estimations')
     parser.add_argument("--ablate_norm", action='store_true')
@@ -146,6 +170,8 @@ def main():
 
     # prepare toker
     toker = AutoTokenizer.from_pretrained(args.pretrained_model_path, use_fast='Orca-2-' not in model_name)
+    toker, new_input_embeddings = process_jailbreak_prompt_as_word_embedding(model, toker, args.prompt_length)
+    model.set_input_embeddings(new_input_embeddings.to(device=model.device, dtype=model.dtype))
 
     if 'Llama-2-' in model_name and '-chat' in model_name:
         generation_config_file = './generation_configs/llama-2-chat.json'
@@ -167,15 +193,11 @@ def main():
     chat_template = chat_template.replace('    ', '').replace('\n', '')
     toker.chat_template = chat_template
 
-    # prepare soft prompt
-    if args.prompt_length == 'default':
-        init_ids = toker(DEFAULT_SYSTEM_PROMPT).input_ids[1:]
-    elif args.prompt_length == 'short':
-        init_ids = toker(SHORT_SYSTEM_PROMPT).input_ids[1:]
-    elif args.prompt_length == 'mistral':
-        init_ids = toker(MISTRAL_SYSTEM_PROMPT).input_ids[1:]
+    # prepare jailbreak prompt
+    jailbreak_prompt = f"{''.join([f'<jailbreak_prompt_{i}>' for i in range(args.prompt_length)])}"
+    init_ids = toker(jailbreak_prompt).input_ids[1:]
     init_embeds = model.get_input_embeddings().weight.data[init_ids].detach()
-    soft_prompt = nn.Parameter(init_embeds, requires_grad=True).to(model.device)
+    jailbreak_prompt = nn.Parameter(init_embeds, requires_grad=True).to(model.device)
 
     logging.info(f"Other modules loaded")
     logging_cuda_memory_usage()
@@ -203,12 +225,6 @@ def main():
     base_harmfulness_logits = {}
     for messages in all_messages:
         query = messages[0]['content']
-        if args.prompt_length == 'default':
-            messages = [{'role': 'system', 'content': DEFAULT_SYSTEM_PROMPT}] + messages
-        elif args.prompt_length == 'short':
-            messages = [{'role': 'system', 'content': SHORT_SYSTEM_PROMPT}] + messages
-        elif args.prompt_length == 'mistral':
-            messages = [{'role': 'system', 'content': MISTRAL_SYSTEM_PROMPT}] + messages
         input_ids = toker.apply_chat_template(messages, add_generation_prompt=True, tokenize=True)
         input_ids = torch.tensor([input_ids], dtype=torch.long, device=model.device)
 
@@ -223,7 +239,7 @@ def main():
         base_harmfulness_logits[query] = harmfulness_logits.detach()
 
     step = 0
-    optimizer = torch.optim.AdamW([soft_prompt], lr=1e-3)
+    optimizer = torch.optim.AdamW([jailbreak_prompt], lr=1e-3)
     seed = 42
     for epoch_idx, batch_messages, batch_labels in get_shuffled_messages_and_labels(all_messages, labels, seed=seed):
         batch_queries = [e[0]['content'] for e in batch_messages]
@@ -232,7 +248,7 @@ def main():
         batch_base_harmfulness_logits = torch.concat([base_harmfulness_logits[e] for e in batch_queries], dim=0)
         optimizer.zero_grad()
 
-        inputs_embeds, new_input_lengths = embed_soft_prompt(model, toker, batch_messages, soft_prompt)
+        inputs_embeds, new_input_lengths = embed_soft_prompt(model, toker, batch_messages, jailbreak_prompt)
         new_hidden_states = model(inputs_embeds=inputs_embeds, output_hidden_states=True).hidden_states[-1]
         new_last_hidden_states = new_hidden_states[range(len(new_input_lengths)), np.array(new_input_lengths, dtype=int)-1]
 
@@ -243,35 +259,37 @@ def main():
         #norm_loss = torch.mean(torch.mean(new_transformed[:, PCA_DIM:] - base_transformed[:, PCA_DIM:], dim=0)**2)
         refusal_logits = refusal_model(new_transformed[:, :PCA_DIM]).squeeze(-1) - batch_base_refusal_logits
         refusal_loss = F.binary_cross_entropy_with_logits(refusal_logits, batch_labels)
-        harmfulness_logits = harmfulness_model(new_transformed[:, :PCA_DIM]).squeeze(-1) - batch_base_harmfulness_logits
-        harmfulness_loss = F.binary_cross_entropy_with_logits(harmfulness_logits, batch_labels)
+        # harmfulness_logits = harmfulness_model(new_transformed[:, :PCA_DIM]).squeeze(-1) - batch_base_harmfulness_logits
+        # harmfulness_loss = F.binary_cross_entropy_with_logits(harmfulness_logits, batch_labels)
 
-        if args.ablate_refu:
-            total_loss = harmfulness_loss + norm_loss * 1e-3
-        elif args.ablate_harm:
-            total_loss = refusal_loss + norm_loss * 1e-3
-        elif args.ablate_norm:
-            total_loss = refusal_loss + harmfulness_loss * 1e-2
-        else:
-            total_loss = refusal_loss + harmfulness_loss * 1e-2 + norm_loss * 1e-3
+        # if args.ablate_refu:
+        #     total_loss = harmfulness_loss + norm_loss * 1e-3
+        # elif args.ablate_harm:
+        #     total_loss = refusal_loss + norm_loss * 1e-3
+        # elif args.ablate_norm:
+        #     total_loss = refusal_loss + harmfulness_loss * 1e-2
+        # else:
+        #     total_loss = refusal_loss + harmfulness_loss * 1e-2 + norm_loss * 1e-3
+        total_loss = -refusal_loss
 
         total_loss.backward()
-        torch.nn.utils.clip_grad_norm_(soft_prompt, 1.0)
+        torch.nn.utils.clip_grad_norm_(jailbreak_prompt, 1.0)
         optimizer.step()
         step += 1
 
         if step % 10 == 0:
-            logging.info(f'Step {step}, refusal_loss {refusal_loss.cpu().item()}, harmfulness_loss {harmfulness_loss.cpu().item()}, norm_loss {norm_loss.cpu().item()}')
+            # logging.info(f'Step {step}, refusal_loss {refusal_loss.cpu().item()}, harmfulness_loss {harmfulness_loss.cpu().item()}, norm_loss {norm_loss.cpu().item()}')
+            logging.info(f'Step {step}, refusal_loss {refusal_loss.cpu().item()}')
 
-    soft_prompt = soft_prompt.detach()
+    jailbreak_prompt = jailbreak_prompt.detach()
     if args.ablate_norm:
-        save_file({'soft_prompt': soft_prompt}, f'{args.output_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_nonorm.safetensors')
+        save_file({'jailbreak_prompt': jailbreak_prompt}, f'{args.output_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_nonorm.safetensors')
     elif args.ablate_refu:
-        save_file({'soft_prompt': soft_prompt}, f'{args.output_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_norefu.safetensors')
+        save_file({'jailbreak_prompt': jailbreak_prompt}, f'{args.output_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_norefu.safetensors')
     elif args.ablate_harm:
-        save_file({'soft_prompt': soft_prompt}, f'{args.output_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_noharm.safetensors')
+        save_file({'jailbreak_prompt': jailbreak_prompt}, f'{args.output_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}_noharm.safetensors')
     else:
-        save_file({'soft_prompt': soft_prompt}, f'{args.output_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}.safetensors')
+        save_file({'jailbreak_prompt': jailbreak_prompt}, f'{args.output_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}.safetensors')
 
     logging.info(f"Training finished")
 
