@@ -33,7 +33,7 @@ logging.basicConfig(
 warnings.simplefilter("ignore")
 
 BATCH_SIZE = 50
-NUM_EPOCHES = 40
+NUM_EPOCHES = 100
 
 
 def process_jailbreak_prompt_as_word_embedding(
@@ -216,7 +216,7 @@ def main():
     n_queries_harmless = len(all_queries_harmless)
 
     all_messages = [[{'role': 'user', 'content': e.strip()}] for e in all_queries] + [[{'role': 'user', 'content': e.strip()}] for e in all_queries_harmless]
-    labels = [0 for _ in range(n_queries)] + [1 for _ in range(n_queries_harmless)]
+    labels = [0 for _ in range(n_queries)] + [0 for _ in range(n_queries_harmless)]
     labels = torch.tensor(labels, dtype=torch.float).to(device)
 
     base_hidden_states = {}
