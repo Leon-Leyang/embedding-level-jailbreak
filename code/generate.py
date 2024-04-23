@@ -105,7 +105,6 @@ def generate(inputs, model, toker, max_new_tokens, n_samples, temp, top_p, stop_
         set_seed(seed)
 
     input_text = toker.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
-    logging.info(f"Tokenized input: {toker.tokenize(input_text)}")
     input_ids = torch.tensor(
         toker.convert_tokens_to_ids(toker.tokenize(input_text)),
         dtype=torch.long,
