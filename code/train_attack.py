@@ -283,7 +283,7 @@ def main():
             # logging.info(f'Step {step}, refusal_loss {refusal_loss.cpu().item()}, harmfulness_loss {harmfulness_loss.cpu().item()}, norm_loss {norm_loss.cpu().item()}')
 
             # logging.info(f'Step {step}, refusal_loss {refusal_loss.cpu().item()}')
-            logging.info(f'Step {step}, refusal_loss {-total_loss.cpu().item()}, norm_loss {norm_loss.cpu().item()}')
+            logging.info(f'Step {step}, refusal_loss {refusal_loss.cpu().item()}, norm_loss {norm_loss.cpu().item()}')
 
     jailbreak_prompt = jailbreak_prompt.detach()
     if args.ablate_norm:
