@@ -153,6 +153,7 @@ def main():
     parser.add_argument("--use_default_prompt", action='store_true')
     parser.add_argument("--use_short_prompt", action='store_true')
     parser.add_argument("--use_mistral_prompt", action='store_true')
+    parser.add_argument("--use_jailbreak_prompt", action='store_true')
 
     parser.add_argument("--use_malicious", action="store_true")
     parser.add_argument("--use_advbench", action="store_true")
@@ -230,6 +231,8 @@ def main():
         fname += "_with_short"
     elif args.use_mistral_prompt:
         fname += "_with_mistral"
+    elif args.use_jailbreak_prompt:
+        fname += f"_with_jailbreak_{args.system_prompt_type}_20"
 
     if args.use_harmless:
         data_path = './data_harmless'
@@ -306,6 +309,13 @@ def main():
             soft_prompt_file = f'{args.soft_prompt_path}/{model_name}/type.{args.system_prompt_type}_length.{args.prompt_length}.safetensors'
         with safe_open(soft_prompt_file, framework='pt') as f:
             soft_prompt = f.get_tensor('soft_prompt')
+        args.soft_prompt = soft_prompt
+        toker, new_input_embeddings = process_soft_prompt_as_word_embedding(model, toker, soft_prompt)
+        model.set_input_embeddings(new_input_embeddings.to(device=model.device, dtype=model.dtype))
+    elif args.use_jailbreak_prompt:
+        soft_prompt_file = f'{args.soft_prompt_path}/{model_name}/type.{args.system_prompt_type}_length.20.safetensors'
+        with safe_open(soft_prompt_file, framework='pt') as f:
+            soft_prompt = f.get_tensor('jailbreak_prompt')
         args.soft_prompt = soft_prompt
         toker, new_input_embeddings = process_soft_prompt_as_word_embedding(model, toker, soft_prompt)
         model.set_input_embeddings(new_input_embeddings.to(device=model.device, dtype=model.dtype))
