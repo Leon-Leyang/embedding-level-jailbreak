@@ -72,6 +72,31 @@ def process_soft_prompt_as_word_embedding(
     return toker, new_input_embeddings
 
 
+def process_jailbreak_prompt_as_word_embedding(
+    model: PreTrainedModel,
+    toker: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
+    soft_prompt: torch.nn.Parameter
+) -> nn.Module:
+    # We embed soft prompt into input word embedding and safe it
+    # When loaded later, simply call model.set_input_embeddings()
+    config = model.config
+    padding_idx = config.pad_token_id
+
+    old_toker_size = len(toker)
+    toker.add_tokens([f'<jailbreak_prompt_{i}>' for i in range(soft_prompt.size(0))], special_tokens=True)
+    new_toker_size = len(toker)
+
+    old_input_embeddings = model.get_input_embeddings()
+    embedding_dim = old_input_embeddings.embedding_dim
+    old_num_embeddings = old_input_embeddings.num_embeddings
+    new_num_embeddings = max(new_toker_size, old_num_embeddings)
+
+    new_input_embeddings = nn.Embedding(new_num_embeddings, embedding_dim, padding_idx)
+    new_input_embeddings.weight.data[:old_toker_size] = old_input_embeddings.weight.data[:old_toker_size]
+    new_input_embeddings.weight.data[old_toker_size:new_toker_size] = soft_prompt.data.to('cpu')
+    return toker, new_input_embeddings
+
+
 def generate(inputs, model, toker, max_new_tokens, n_samples, temp, top_p, stop_token_ids, stop_str):
     qdx, (seed, query, messages) = inputs
     if seed is None:
@@ -80,6 +105,7 @@ def generate(inputs, model, toker, max_new_tokens, n_samples, temp, top_p, stop_
         set_seed(seed)
 
     input_text = toker.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+    logging.info(f"Tokenized input: {toker.tokenize(input_text)}")
     input_ids = torch.tensor(
         toker.convert_tokens_to_ids(toker.tokenize(input_text)),
         dtype=torch.long,
@@ -319,7 +345,7 @@ def main():
         with safe_open(soft_prompt_file, framework='pt') as f:
             soft_prompt = f.get_tensor('jailbreak_prompt')
         args.soft_prompt = soft_prompt
-        toker, new_input_embeddings = process_soft_prompt_as_word_embedding(model, toker, soft_prompt)
+        toker, new_input_embeddings = process_jailbreak_prompt_as_word_embedding(model, toker, soft_prompt)
         model.set_input_embeddings(new_input_embeddings.to(device=model.device, dtype=model.dtype))
 
     # prepend sys prompt
