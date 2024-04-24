@@ -5,8 +5,15 @@ full_model_name="meta-llama/Llama-2-7b-chat-hf"
 
 model=${HF_MODELS}/${full_model_name}
 
-# Forward train set + attack
+# Forward harmful train set + attack
 python forward_with_jailbreak.py \
+    --pretrained_model_path ${model} \
+    --jailbreak_prompt_path ./trained_prompts_attack \
+    --output_path ./hidden_states_with_jailbreak
+
+# Forward harmless train set + attack
+python forward_with_jailbreak.py \
+    --use_harmless \
     --pretrained_model_path ${model} \
     --jailbreak_prompt_path ./trained_prompts_attack \
     --output_path ./hidden_states_with_jailbreak
