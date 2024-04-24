@@ -67,8 +67,8 @@ def main():
     colors = {
         'harmless': 'tab:blue',
         'harmful': 'tab:red',
-        'harmless + attack-v1': 'tab:cyan',
-        'harmful + attack-v1': 'tab:pink',
+        'harmless + jailbreak': 'tab:cyan',
+        'harmful + jailbreak': 'tab:pink',
     }
 
     all_queries = [e.strip() for e in lines if e.strip()]

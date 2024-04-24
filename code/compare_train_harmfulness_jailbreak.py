@@ -61,8 +61,8 @@ def main():
     colors = {
         'harmless': 'tab:blue',
         'harmful': 'tab:red',
-        'harmless + attack-v1': 'tab:cyan',
-        'harmful + attack-v1': 'tab:pink',
+        'harmless + jailbreak': 'tab:cyan',
+        'harmful + jailbreak': 'tab:pink',
     }
 
     all_queries = [e.strip() for e in lines if e.strip()]
@@ -173,7 +173,7 @@ def main():
                     color=colors['harmless + jailbreak'])
         ax.scatter(points[indices_with_jailbreak_harmless, 0], points[indices_with_jailbreak_harmless, 1],
                     marker='o', alpha=0.39,
-                    color=colors['harmless + jailbreak'], label='harmless + jailbreak')
+                    color=colors['harmless + jailbreak'], label='harmless + jailbreak-v1')
 
         # harmful
         points = torch.matmul(all_hidden_states - mean, V)[:, 0:].cpu().numpy()
@@ -190,7 +190,7 @@ def main():
                     color=colors['harmful + jailbreak'])
         ax.scatter(points[indices_with_jailbreak, 0], points[indices_with_jailbreak, 1],
                     marker='x', alpha=0.41,
-                    color=colors['harmful + jailbreak'], label='harmful + jailbreak')
+                    color=colors['harmful + jailbreak'], label='harmful + jailbreak-v1')
 
         xlim = ax.get_xlim()
         ylim = ax.get_ylim()
