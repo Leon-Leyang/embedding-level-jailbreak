@@ -21,7 +21,7 @@ PCA_DIM = 4
 
 def get_following_indices(
     model_name, dataset='custom', config='sampling',
-    use_default_prompt=False, use_short_prompt=False, use_mistral_prompt=False,
+    use_default_prompt=False, use_short_prompt=False, use_mistral_prompt=False, use_jailbreak_prompt=False,
     use_soft_prompt=False,
     use_harmless=False,
     return_only_scores=False,
@@ -40,6 +40,8 @@ def get_following_indices(
         fname += f'_with_mistral'
     elif use_soft_prompt:
         fname += f'_with_soft_all_default'
+    elif use_jailbreak_prompt:
+        fname += f'_with_jailbreak_all_20'
     fname += f'_{dataset}'
     fname += '.csv'
     if not os.path.exists(fname):
