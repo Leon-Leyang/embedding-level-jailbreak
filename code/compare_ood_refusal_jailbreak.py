@@ -54,7 +54,7 @@ def main():
     args = parser.parse_args()
 
     # prepare data
-    fname = f'all_soft_harmfulness'
+    fname = f'all_soft_refusal'
     dataset_1 = 'advbench'
     fname += f'_{dataset_1}'
     dataset_2 = 'malicious'
