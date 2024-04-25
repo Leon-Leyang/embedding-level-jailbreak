@@ -18,10 +18,10 @@ full_model_name=${HF_MODELS}/"meta-llama/Llama-2-7b-chat-hf"
 python compare_ood_harmfulness_jailbreak.py \
     --pretrained_model_paths ${full_model_name} \
     --config sampling \
-    --output_path comparisons/train_jailbreak
+    --output_path comparisons/ood_jailbreak
 
 
 python compare_ood_refusal_jailbreak.py \
     --pretrained_model_paths ${full_model_name} \
     --config sampling \
-    --output_path comparisons/train_jailbreak
+    --output_path comparisons/ood_jailbreak
