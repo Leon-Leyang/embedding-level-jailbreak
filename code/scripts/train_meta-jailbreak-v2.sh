@@ -43,26 +43,38 @@ prompt_length=20
 #    --model_names ${model_name}_with_jailbreak-v2_${system_prompt_type}_${prompt_length}
 ##"""
 
-#echo """
-# harmful eval for custom
-python generate.py \
-    --use_sampling --n_samples 25 --pretrained_model_path ${model} \
-    --system_prompt_type ${system_prompt_type}\
-    --use_jailbreak_prompt \
-    --soft_prompt_path ./trained_prompts_attack-v2
-
-python evaluate.py \
-    --config sampling --evaluator_path ${HF_MODELS}/meta-llama/LlamaGuard-7b \
-    --model_names ${model_name}_with_jailbreak-v2_${system_prompt_type}_${prompt_length}
+##echo """
+## harmful eval for custom
+#python generate.py \
+#    --use_sampling --n_samples 25 --pretrained_model_path ${model} \
+#    --system_prompt_type ${system_prompt_type}\
+#    --use_jailbreak_prompt \
+#    --soft_prompt_path ./trained_prompts_attack-v2
+#
+#python evaluate.py \
+#    --config sampling --evaluator_path ${HF_MODELS}/meta-llama/LlamaGuard-7b \
+#    --model_names ${model_name}_with_jailbreak-v2_${system_prompt_type}_${prompt_length}
+#
+##"""
+## harmless eval for custom
+#python generate.py \
+#    --use_sampling --n_samples 25 --use_harmless --pretrained_model_path ${model} \
+#    --system_prompt_type ${system_prompt_type}\
+#    --use_jailbreak_prompt \
+#    --soft_prompt_path ./trained_prompts_attack-v2
+#
+#python evaluate.py \
+#    --config sampling --use_harmless --evaluator_path ${HF_MODELS}/meta-llama/LlamaGuard-7b \
+#    --model_names ${model_name}_with_jailbreak-v2_${system_prompt_type}_${prompt_length}
 
 #"""
-# harmless eval for custom
+# eval for testset
 python generate.py \
-    --use_sampling --n_samples 25 --use_harmless --pretrained_model_path ${model} \
+    --use_sampling --n_samples 25 --use_testset --pretrained_model_path ${model} \
     --system_prompt_type ${system_prompt_type}\
     --use_jailbreak_prompt \
     --soft_prompt_path ./trained_prompts_attack-v2
 
 python evaluate.py \
-    --config sampling --use_harmless --evaluator_path ${HF_MODELS}/meta-llama/LlamaGuard-7b \
+    --config sampling --use_testset --evaluator_path ${HF_MODELS}/meta-llama/LlamaGuard-7b \
     --model_names ${model_name}_with_jailbreak-v2_${system_prompt_type}_${prompt_length}
