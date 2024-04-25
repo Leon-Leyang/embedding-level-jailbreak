@@ -70,11 +70,11 @@ prompt_length=20
 #"""
 # eval for testset
 python generate.py \
-    --use_sampling --n_samples 25 --use_testset --pretrained_model_path ${model} \
+    --use_sampling --n_samples 25 --use_harmless --use_testset --pretrained_model_path ${model} \
     --system_prompt_type ${system_prompt_type}\
     --use_jailbreak_prompt \
     --soft_prompt_path ./trained_prompts_attack-v2
 
 python evaluate.py \
-    --config sampling --use_testset --evaluator_path ${HF_MODELS}/meta-llama/LlamaGuard-7b \
+    --config sampling --use_harmless --use_testset --evaluator_path ${HF_MODELS}/meta-llama/LlamaGuard-7b \
     --model_names ${model_name}_with_jailbreak-v2_${system_prompt_type}_${prompt_length}
