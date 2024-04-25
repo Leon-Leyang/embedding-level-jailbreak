@@ -74,8 +74,8 @@ def main():
         'held-out + jailbreak': 'tab:cyan',
         'malicious': 'tab:red',
         'malicious + jailbreak': 'tab:pink',
-        'advbench': 'tab:orange',
-        'advbench + jailbreak': 'tab:yellow',
+        'advbench': 'tab:brown',
+        'advbench + jailbreak': 'tab:orange',
     }
 
     all_queries_1 = [e.strip() for e in lines_1 if e.strip()]
@@ -206,7 +206,7 @@ def main():
             scores_with_jailbreak_1,
             scores_2,
             scores_with_jailbreak_2,
-        ], dim=0).cpu().numpy()
+        ], dim=0)
         values = values.cpu().numpy()
 
         values = smooth_fn(values)
