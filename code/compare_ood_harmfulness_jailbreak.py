@@ -134,21 +134,21 @@ def main():
 
         # jailbreak
         logging.info(f"Running jailbreak")
-        hidden_states_with_jailbreak = safe_open(f'hidden_states_with_jailbreak_harmless/{model_name}_{dataset_harmless}.safetensors',
+        hidden_states_with_jailbreak = safe_open(f'hidden_states_with_jailbreak-v2_harmless/{model_name}_{dataset_harmless}.safetensors',
                                                         framework='pt', device=0)
         all_hidden_states_with_jailbreak_harmless = []
         for idx, query_harmless in enumerate(all_queries_harmless):
             tmp_hidden_states = hidden_states_with_jailbreak.get_tensor(f'sample.{idx}_layer.{num_layers-1}')[-1]
             all_hidden_states_with_jailbreak_harmless.append(tmp_hidden_states)
 
-        hidden_states_with_jailbreak = safe_open(f'hidden_states_with_jailbreak/{model_name}_{dataset_1}.safetensors',
+        hidden_states_with_jailbreak = safe_open(f'hidden_states_with_jailbreak-v2/{model_name}_{dataset_1}.safetensors',
                                                 framework='pt', device=0)
         all_hidden_states_with_jailbreak_1 = []
         for idx, query in enumerate(all_queries_1):
             tmp_hidden_states = hidden_states_with_jailbreak.get_tensor(f'sample.{idx}_layer.{num_layers-1}')[-1]
             all_hidden_states_with_jailbreak_1.append(tmp_hidden_states)
 
-        hidden_states_with_jailbreak = safe_open(f'hidden_states_with_jailbreak/{model_name}_{dataset_2}.safetensors',
+        hidden_states_with_jailbreak = safe_open(f'hidden_states_with_jailbreak-v2/{model_name}_{dataset_2}.safetensors',
                                                 framework='pt', device=0)
         all_hidden_states_with_jailbreak_2 = []
         for idx, query in enumerate(all_queries_2):
@@ -198,7 +198,7 @@ def main():
                     color=colors['held-out + jailbreak'])
         ax.scatter(points[indices_with_jailbreak_harmless, 0], points[indices_with_jailbreak_harmless, 1],
                     marker='o', alpha=0.39,
-                    color=colors['held-out + jailbreak'], label='held-out + jailbreak-v1')
+                    color=colors['held-out + jailbreak'], label='held-out + jailbreak-v2')
 
         # advbench
         points = torch.matmul(all_hidden_states_1 - mean, V)[:, 0:].cpu().numpy()
@@ -215,7 +215,7 @@ def main():
                     color=colors['advbench + jailbreak'])
         ax.scatter(points[indices_with_jailbreak_1, 0], points[indices_with_jailbreak_1, 1],
                     marker='x', alpha=0.41,
-                    color=colors['advbench + jailbreak'], label='advbench + jailbreak-v1')
+                    color=colors['advbench + jailbreak'], label='advbench + jailbreak-v2')
 
         # malicious
         points = torch.matmul(all_hidden_states_2 - mean, V)[:, 0:].cpu().numpy()
@@ -232,7 +232,7 @@ def main():
                     color=colors['malicious + jailbreak'])
         ax.scatter(points[indices_with_jailbreak_2, 0], points[indices_with_jailbreak_2, 1],
                     marker='x', alpha=0.41,
-                    color=colors['malicious + jailbreak'], label='malicious + jailbreak-v1')
+                    color=colors['malicious + jailbreak'], label='malicious + jailbreak-v2')
 
 
         xlim = ax.get_xlim()

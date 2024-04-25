@@ -41,7 +41,7 @@ def get_following_indices(
     elif use_soft_prompt:
         fname += f'_with_soft_all_default'
     elif use_jailbreak_prompt:
-        fname += f'_with_jailbreak_all_20'
+        fname += f'_with_jailbreak-v2_all_20'
     fname += f'_{dataset}'
     fname += '.csv'
     if not os.path.exists(fname):
